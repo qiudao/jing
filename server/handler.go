@@ -338,9 +338,10 @@ func (h *Handler) trainWithWatch(conn *websocket.Conn, q *ai.QTable, d TrainData
 
 		b := game.NewBoard()
 		type step struct {
-			state  string
-			action int
-			player int
+			state     string
+			action    int
+			player    int
+			available []int
 		}
 		var history []step
 
@@ -356,13 +357,14 @@ func (h *Handler) trainWithWatch(conn *websocket.Conn, q *ai.QTable, d TrainData
 			default:
 			}
 			state := b.StateKey()
+			avail := b.AvailableMoves()
 			var action int
 			if b.Turn == game.X {
-				action = agentX.ChooseAction(state, b.AvailableMoves())
+				action = agentX.ChooseAction(state, avail)
 			} else {
-				action = agentO.ChooseAction(state, b.AvailableMoves())
+				action = agentO.ChooseAction(state, avail)
 			}
-			history = append(history, step{state, action, b.Turn})
+			history = append(history, step{state, action, b.Turn, avail})
 			b.Move(action)
 
 			h.hub.Send(conn, "game_state", map[string]interface{}{
@@ -377,16 +379,24 @@ func (h *Handler) trainWithWatch(conn *websocket.Conn, q *ai.QTable, d TrainData
 		winner := b.Winner()
 		for i := len(history) - 1; i >= 0; i-- {
 			s := history[i]
-			var reward float64
-			switch {
-			case winner == game.Empty:
-				reward = 0.5
-			case winner == s.player:
-				reward = 1.0
-			default:
-				reward = -1.0
+			var nextState string
+			var nextAvail []int
+			if i+2 < len(history) {
+				nextState = history[i+2].state
+				nextAvail = history[i+2].available
 			}
-			q.Update(s.state, s.action, reward, "", []int{}, 0.1, 0.9)
+			var reward float64
+			if i+2 >= len(history) {
+				switch {
+				case winner == game.Empty:
+					reward = 0.5
+				case winner == s.player:
+					reward = 1.0
+				default:
+					reward = -1.0
+				}
+			}
+			q.Update(s.state, s.action, reward, nextState, nextAvail, 0.1, 0.9)
 		}
 
 		var result int

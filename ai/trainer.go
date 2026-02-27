@@ -35,37 +35,54 @@ func Train(q *QTable, cfg TrainConfig, progress func(TrainProgress)) TrainResult
 
 		b := game.NewBoard()
 		type step struct {
-			state  string
-			action int
-			player int
+			state     string
+			action    int
+			player    int
+			available []int
 		}
 		var history []step
 
 		for !b.IsOver() {
 			state := b.StateKey()
+			avail := b.AvailableMoves()
 			var action int
 			if b.Turn == game.X {
-				action = agentX.ChooseAction(state, b.AvailableMoves())
+				action = agentX.ChooseAction(state, avail)
 			} else {
-				action = agentO.ChooseAction(state, b.AvailableMoves())
+				action = agentO.ChooseAction(state, avail)
 			}
-			history = append(history, step{state, action, b.Turn})
+			history = append(history, step{state, action, b.Turn, avail})
 			b.Move(action)
 		}
 
 		winner := b.Winner()
 		for i := len(history) - 1; i >= 0; i-- {
 			s := history[i]
-			var reward float64
-			switch {
-			case winner == game.Empty:
-				reward = 0.5
-			case winner == s.player:
-				reward = 1.0
-			default:
-				reward = -1.0
+
+			// find next state from this player's perspective (2 steps ahead)
+			var nextState string
+			var nextAvail []int
+			if i+2 < len(history) {
+				nextState = history[i+2].state
+				nextAvail = history[i+2].available
 			}
-			q.Update(s.state, s.action, reward, "", []int{}, cfg.Alpha, cfg.Gamma)
+
+			// only terminal steps get explicit reward
+			var reward float64
+			if i+2 >= len(history) {
+				// this is one of the last two moves — terminal
+				switch {
+				case winner == game.Empty:
+					reward = 0.5
+				case winner == s.player:
+					reward = 1.0
+				default:
+					reward = -1.0
+				}
+			}
+			// non-terminal steps: reward=0, value comes from gamma*maxQ(nextState)
+
+			q.Update(s.state, s.action, reward, nextState, nextAvail, cfg.Alpha, cfg.Gamma)
 		}
 
 		var result int
