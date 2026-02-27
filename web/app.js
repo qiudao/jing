@@ -100,8 +100,11 @@
     }
 
     function updateStats(stats) {
-        // Try mode-specific key first, then fall back
-        var s = stats[currentMode] || {xWins: 0, oWins: 0, draws: 0};
+        var key = currentMode;
+        if (currentMode === 'hva') {
+            key = 'hva-' + getSelectedDifficulty();
+        }
+        var s = stats[key] || {xWins: 0, oWins: 0, draws: 0};
         document.getElementById('stat-xwins').textContent = s.xWins || 0;
         document.getElementById('stat-owins').textContent = s.oWins || 0;
         document.getElementById('stat-draws').textContent = s.draws || 0;
