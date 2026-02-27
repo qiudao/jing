@@ -160,6 +160,19 @@ func (h *Handler) handleStartGame(conn *websocket.Conn, data json.RawMessage) {
 	h.sessions[conn] = sess
 	h.mu.Unlock()
 
+	// Check model exists before starting AI modes
+	if d.Mode == "hva" || d.Mode == "ava" {
+		if _, ok := h.models[d.Difficulty]; !ok {
+			h.hub.Send(conn, "error", map[string]string{
+				"message": "model not trained yet for " + d.Difficulty + ", please train first",
+			})
+			h.mu.Lock()
+			delete(h.sessions, conn)
+			h.mu.Unlock()
+			return
+		}
+	}
+
 	h.sendGameState(conn, sess)
 
 	if d.Mode == "ava" {

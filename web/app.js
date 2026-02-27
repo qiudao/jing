@@ -125,6 +125,9 @@
         var btn = document.getElementById('btn-train');
         btn.textContent = 'Start Training';
         btn.disabled = false;
+        // Sync game difficulty radio to trained difficulty
+        var radio = document.querySelector('input[name="difficulty"][value="' + data.difficulty + '"]');
+        if (radio) radio.checked = true;
     }
 
     function drawChart() {
