@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe RL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Tic-Tac-Toe RL</h1>
+        <span id="connection-status" class="status-dot disconnected"></span>
+    </header>
+
+    <main>
+        <section class="panel controls">
+            <h2>Game Mode</h2>
+            <div class="radio-group">
+                <label><input type="radio" name="mode" value="hvh"> Human vs Human</label>
+                <label><input type="radio" name="mode" value="hva" checked> Human vs AI</label>
+                <label><input type="radio" name="mode" value="ava"> AI vs AI</label>
+            </div>
+
+            <div id="difficulty-section">
+                <h2>AI Difficulty</h2>
+                <div class="radio-group">
+                    <label><input type="radio" name="difficulty" value="beginner"> Beginner</label>
+                    <label><input type="radio" name="difficulty" value="intermediate"> Intermediate</label>
+                    <label><input type="radio" name="difficulty" value="expert" checked> Expert</label>
+                </div>
+            </div>
+
+            <div id="speed-section" class="hidden">
+                <h2>Speed</h2>
+                <input type="range" id="speed-slider" min="100" max="2000" value="500" step="100">
+                <span id="speed-value">500ms</span>
+            </div>
+
+            <div class="button-group">
+                <button id="btn-start" class="btn btn-primary">Start</button>
+                <button id="btn-reset" class="btn">Reset</button>
+            </div>
+        </section>
+
+        <section class="panel board-container">
+            <div id="board" class="board">
+                <div class="cell" data-pos="0"></div>
+                <div class="cell" data-pos="1"></div>
+                <div class="cell" data-pos="2"></div>
+                <div class="cell" data-pos="3"></div>
+                <div class="cell" data-pos="4"></div>
+                <div class="cell" data-pos="5"></div>
+                <div class="cell" data-pos="6"></div>
+                <div class="cell" data-pos="7"></div>
+                <div class="cell" data-pos="8"></div>
+            </div>
+        </section>
+
+        <section class="panel info">
+            <h2>Status</h2>
+            <div id="game-status" class="status-text">Select mode and click Start</div>
+
+            <h2>Statistics</h2>
+            <div id="stats-display">
+                <table>
+                    <tr><th>X Wins</th><td id="stat-xwins">0</td></tr>
+                    <tr><th>O Wins</th><td id="stat-owins">0</td></tr>
+                    <tr><th>Draws</th><td id="stat-draws">0</td></tr>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <section class="panel training-panel">
+        <h2>Training</h2>
+        <div class="training-controls">
+            <div class="training-row">
+                <label>Difficulty:
+                    <select id="train-difficulty">
+                        <option value="beginner">Beginner (10K episodes)</option>
+                        <option value="intermediate">Intermediate (50K episodes)</option>
+                        <option value="expert">Expert (200K episodes)</option>
+                    </select>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="train-watch"> Watch
+                </label>
+                <button id="btn-train" class="btn btn-primary">Start Training</button>
+            </div>
+            <div class="progress-container hidden" id="train-progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="train-progress-fill"></div>
+                </div>
+                <span id="train-progress-text">0%</span>
+            </div>
+            <canvas id="chart" width="600" height="200"></canvas>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
